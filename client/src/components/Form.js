@@ -24,8 +24,8 @@ export default class ContactForm extends React.Component {
 		this.postName = this.postName.bind(this);
 	}
 
-	task = () => cron.schedule('*/3 * * * * *', () => {
-		console.log('getting events');
+	task = () => cron.schedule('*/2 * * * * *', () => {
+		console.log('Reloading\n\nEvents showing means not added yet.\n\nEvents gone means added to other sites.');
 		this.getEvents();
 	});
 
