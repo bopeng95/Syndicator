@@ -24,14 +24,14 @@ export default class ContactForm extends React.Component {
 		this.postName = this.postName.bind(this);
 	}
 
-	// task = () => cron.schedule('*/5 * * * * *', function() {
-	// 	console.log('ReLoading!!!');
-	// 	this.getEvents();
-	// });
+	task = () => cron.schedule('*/3 * * * * *', () => {
+		console.log('getting events');
+		this.getEvents();
+	});
 
 	componentDidMount() {
-		//this.task();
 		this.getEvents();
+		//this.task();
 	}
 
 	handleName = (e) => {this.setState({name: e.target.value})};
@@ -41,7 +41,10 @@ export default class ContactForm extends React.Component {
 
 	getEvents = () => {
 		axios.get('/api/events')
-		.then(data => this.setState({events: data.data}));
+		.then(data => {
+			let newData = data.data.filter(e => e.used === false);
+			this.setState({events: newData});
+		});
 	};
 
 	postName = (e) => {
@@ -57,7 +60,7 @@ export default class ContactForm extends React.Component {
 		return (
 			<div>
 				<div className="row">
-					<div className="four columns">
+					<div className="five columns">
 						<h4 className="title">Add Events</h4>
 						<form className={this.state.classnames} onSubmit={this.postName}>
 							<label>Name</label>
@@ -71,8 +74,8 @@ export default class ContactForm extends React.Component {
 							<input type="submit" value="Submit"/>
 						</form>
 					</div>
-					<div className="eight columns">
-						<h4 className="title">Added Events</h4>
+					<div className="seven columns">
+						<h4 className="title">To Be Added</h4>
 						<People eve={this.state.events}/>
 					</div>
 				</div>

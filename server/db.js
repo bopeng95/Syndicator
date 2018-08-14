@@ -4,7 +4,8 @@ const event = mongoose.Schema({
 	name: String,
 	description: String,
 	start: Date,
-	end: Date
+	end: Date,
+	used: Boolean
 });
 
 mongoose.model('Event', event);
