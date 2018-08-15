@@ -28,10 +28,10 @@ const xingKey = tokens.xing['key'];
 const xingGetId = 'https://www.xing-events.com/api/user/find?apikey='+xingKey+'&version=1&format=json&username='+tokens.xing['email'];
 const xingEvent = 'https://www.xing-events.com/api/event/create?apikey='+xingKey+'&version=1&format=json&hostId='+tokens.xing['id'];
 
-/*EventZilla*/
+/*EventZilla (not working) */ 
 const eventzillaToken = tokens.eventzilla['token'];
-const ezKey = tokens.eventzilla['key'];
-const ezUrl = 'https://www.eventzillaapi.net/api/v1/events/x-api-key:' + ezKey;
+const ezKey = tokens.eventzilla['zapier-key'];
+const ezUrl = 'https://www.eventzillaapi.net/api/v1/events/';
 /*================================================*/
 
 /*HEADERS
@@ -44,11 +44,16 @@ const _headers = {
 	'picatic': {
 		'Authorization': 'Bearer ' + picaticKey,
 		'Content-Type': 'application/json'
+	},
+	'eventzilla': {
+		'Authorization': 'Bearer ' + eventzillaToken,
+		'Content-Type': 'application/json'
 	}
 }
 /*================================================*/
 
-let cronPost = () => cron.schedule('*/15 * * * * *', function() {
+//CRON set to 1 minute for now
+let cronPost = () => cron.schedule('* * * * *', function() {
 	Event.find({'used': false}, (err, result, count) => {
 		Event.updateMany({'used': false}, { $set: { 'used': true } },(err,doc) => {
 			if(err) console.log(err);
@@ -56,7 +61,6 @@ let cronPost = () => cron.schedule('*/15 * * * * *', function() {
 				if(result.length == 0) { console.log('Nothing has been added.'); }
 				else {
 					console.log('Changed used to true for added events.');
-					//let axiosPosts = [];
 					result.map(e => {
 						const eb_event = { //adding to eventbrite 
 							"event.name.html": e.name,
@@ -67,7 +71,7 @@ let cronPost = () => cron.schedule('*/15 * * * * *', function() {
 							"event.end.utc": e.end.toISOString().substring(0,19) + 'Z',
 							"event.currency": "USD"
 						};
-						let picatic_event = { //adding to picatic
+						const picatic_event = { //adding to picatic
 							"data": {
 								"attributes": {
 									"title": e.name,
@@ -82,34 +86,30 @@ let cronPost = () => cron.schedule('*/15 * * * * *', function() {
 								"type": "event"
 							}
 						}
-						let eventbritePromises = axios({
+						axios({
 							method: 'post',
 							url: postUrl,
 							headers: _headers['eventbrite'],
 							data: eb_event
 						}).then().catch(err => console.log(err.response.data));
-						let picaticPromises = axios({
+						axios({
 							method: 'post',
 							url: picaticEvent,
 							headers: _headers['picatic'],
 							data: picatic_event
 						}).then().catch(err => console.log(err.response.data));
-						let xingUrl = xingEvent+'&title='+e.name+'&country=US'; //adding to xing events
+						let xingUrl = xingEvent+'&title='+e.name+'&country=US'; //adding to xing events 
 						xingUrl += '&selectedDate='+e.start.toISOString().substring(0,19);
 						xingUrl += '&selectedEndDate='+e.end.toISOString().substring(0,19);
 						xingUrl += '&description='+e.description+'&timezone=America/New_York';
-						let xingPromises = axios.post(xingUrl)
-						.then().catch(err => console.log(err.reponse.data));
-						//axiosPosts.push(eventbritePromises);
-						//axiosPosts.push(picaticPromises);
-						//axiosPosts.push(xingPromises);
+						axios.post(xingUrl).then().catch(err => console.log(err.reponse.data));
 					});
 				}
 			}
 		});
 	})
 });
-//cronPost();
+cronPost();
 
 app.get('/api/events', (req, res) => {
 	Event.find((err, result, count) => {
@@ -131,7 +131,7 @@ app.post('/add', (req, res) => {
 	let d = req.body.description;
 	let s = req.body.start;
 	let e = req.body.end;
-	console.log('Added:\nTitle: '+n+'\nDescription: '+d+'\nStart: '+s+'\nEnd: '+e);
+	console.log('Added:\nTitle: '+n+'\nDescription: '+d+'\nStart: '+s+'\nEnd: '+e+'\n');
 	const event = new Event({
 		name: n,  
 		description: d,
@@ -148,10 +148,10 @@ app.post('/add', (req, res) => {
 app.listen(port, () => console.log('Server on port ' + port));
 
 
-// if(axiosPosts.length > 0) {
-// 	axios.all(axiosPosts)
-// 	.then(axios.spread((...responses) => {
-// 		responses.forEach(res => console.log('Finished'))
-// 		console.log('All axios posts completed');
-// 	})).catch(error => console.log(error.response.data));
-// }
+/*if(axiosPosts.length > 0) {
+	axios.all(axiosPosts)
+	.then(axios.spread((...responses) => {
+		responses.forEach(res => console.log('Finished'))
+		console.log('All axios posts completed');
+	})).catch(error => console.log(error.response.data));
+}*/
