@@ -10,10 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
-    "eventbrite": "^1.0.2",
     "express": "^4.16.3",
     "mongoose": "^5.1.2",
-    "node-cron": "^1.2.1",
-    "node-eventbrite": "0.0.19"
+    "node-cron": "^1.2.1"
   }
 }

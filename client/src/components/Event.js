@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class People extends React.Component { 
+export default class Event extends React.Component { 
 
 	constructor() {
 		super();

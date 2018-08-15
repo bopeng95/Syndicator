@@ -1,8 +1,9 @@
 import React from 'react';
-import People from './People.js';
+import Event from './Event.js';
 import axios from 'axios';
 import '../css/skeleton.css';
 import '../css/normalize.css';
+import '../css/main.css';
 import cron from 'node-cron';
 
 export default class ContactForm extends React.Component { 
@@ -12,6 +13,7 @@ export default class ContactForm extends React.Component {
 		this.state = {
 			classnames: '',
 			events: [],
+			alert: '',
 			name: '',
 			description: '',
 			start: Date,
@@ -31,7 +33,7 @@ export default class ContactForm extends React.Component {
 
 	componentDidMount() {
 		this.getEvents();
-		//this.task();
+		this.task();
 	}
 
 	handleName = (e) => {this.setState({name: e.target.value})};
@@ -49,11 +51,21 @@ export default class ContactForm extends React.Component {
 
 	postName = (e) => {
 		e.preventDefault();
-		let n = this.state.name; let des = this.state.description;
-		let strt = this.state.start; let endDate = this.state.end;
-		this.setState({name:'',description:''});
-		axios.post('/add', {name:n,description:des,start:strt,end:endDate})
-		.then(this.getEvents());
+		console.log('Submit pressed.')
+		let now = Date.now();
+		let s = new Date(this.state.start);
+		let en = new Date(this.state.end);
+		if(now - s > 0) {
+			this.setState({alert: 'Invalid Start Date (now or future)'});
+		} else if(s - en > 0) {
+			this.setState({alert: 'End Date is before Start Date!'})
+		} else {
+			let n = this.state.name; let des = this.state.description;
+			let strt = this.state.start; let endDate = this.state.end;
+			this.setState({name:'',description:'',alert:''});
+			axios.post('/add', {name:n,description:des,start:strt,end:endDate})
+			.then(this.getEvents());
+		}
 	}
 
 	render() {
@@ -73,10 +85,11 @@ export default class ContactForm extends React.Component {
 							<input className="u-full-width" type="datetime-local" name="end" onChange={this.handleEnd} required/>
 							<input type="submit" value="Submit"/>
 						</form>
+						<p className="alert">{this.state.alert}</p>
 					</div>
 					<div className="seven columns">
 						<h4 className="title">To Be Added</h4>
-						<People eve={this.state.events}/>
+						<Event eve={this.state.events}/>
 					</div>
 				</div>
 			</div>

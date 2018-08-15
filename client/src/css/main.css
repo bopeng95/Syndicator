@@ -95,3 +95,9 @@ input[type=submit] {
 	font-size: 18px;
 	margin-bottom: 0px;
 }
+
+.alert {
+	font-size:20px;
+	color:red;
+	font-weight: bold;
+}
