@@ -12,12 +12,14 @@ export default class ContactForm extends React.Component {
 		super();
 		this.state = {
 			classnames: '',
+			noEvent: 'There are no events.',
 			events: [],
 			alert: '',
 			name: '',
 			description: '',
 			start: Date,
-			end: Date
+			end: Date,
+			source: ''
 		}
 		this.handleName = this.handleName.bind(this);
 		this.handleDescription = this.handleDescription.bind(this);
@@ -40,11 +42,17 @@ export default class ContactForm extends React.Component {
 	handleDescription = (e) => {this.setState({description: e.target.value})};
 	handleStart = (e) => {this.setState({start: e.target.value})};
 	handleEnd = (e) => {this.setState({end: e.target.value})};
+	handleSource = (e) => {this.setState({source: e.target.value})};
 
 	getEvents = () => {
 		axios.get('/api/events')
 		.then(data => {
 			let newData = data.data.filter(e => e.used === false);
+			if(newData.length === 0) {
+				this.setState({noEvent: 'There are no events.'})
+			} else {
+				this.setState({noEvent: ''})
+			}
 			this.setState({events: newData});
 		});
 	};
@@ -63,7 +71,7 @@ export default class ContactForm extends React.Component {
 			let n = this.state.name; let des = this.state.description;
 			let strt = this.state.start; let endDate = this.state.end;
 			this.setState({name:'',description:'',alert:''});
-			axios.post('/add', {name:n,description:des,start:strt,end:endDate})
+			axios.post('/add', {name:n,description:des,start:strt,end:endDate,source:this.state.source})
 			.then(this.getEvents());
 		}
 	}
@@ -83,13 +91,15 @@ export default class ContactForm extends React.Component {
 							<input className="u-full-width" type="datetime-local" name="start" onChange={this.handleStart} required/>
 							<label>End</label>
 							<input className="u-full-width" type="datetime-local" name="end" onChange={this.handleEnd} required/>
+							<label>Source</label>
+							<input className="u-full-width" type="text" name="source" onChange={this.handleSource} required/>
 							<input type="submit" value="Submit"/>
 						</form>
 						<p className="alert">{this.state.alert}</p>
 					</div>
 					<div className="seven columns">
 						<h4 className="title">To Be Added</h4>
-						<Event eve={this.state.events}/>
+						<Event eve={this.state.events} condition={this.state.noEvent}/>
 					</div>
 				</div>
 			</div>

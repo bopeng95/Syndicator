@@ -28,6 +28,7 @@ export default class Event extends React.Component {
 						</div>
 					</div>
 				)}
+				<p>{this.props.condition}</p>
 			</div>
 		)
 	}
